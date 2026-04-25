@@ -18,7 +18,7 @@ def init_hwp():
         hwp.RegisterModule("FilePathCheckDLL", "SecurityModule")
         return hwp
     except Exception as e:
-        print(f"HWP Error: {e}")
+        print(f"❌ HWP 실행 오류: {e}")
         return None
 
 def load_json_data(filepath):
@@ -34,18 +34,15 @@ def load_json_data(filepath):
                 raw_text = re.sub(r'//.*', '', raw_text)
                 return json.loads(raw_text)
         except: continue
-    raise ValueError("JSON Parsing Failed")
+    raise ValueError("❌ 데이터 파일(JSON)의 형식을 확인해주세요. (파싱 실패)")
 
-def set_style(hwp, bold=None, underline=None, color=None, shadecolor=None):
+def set_style(hwp, bold=None, underline=None, color=None):
     act = hwp.CreateAction("CharShape")
     pset = act.CreateSet()
     act.GetDefault(pset)
-    
     if bold is not None: pset.SetItem("Bold", 1 if bold else 0)
     if underline is not None: pset.SetItem("UnderlineType", 1 if underline else 0)
     if color is not None: pset.SetItem("TextColor", color)
-    if shadecolor is not None: pset.SetItem("ShadeColor", shadecolor)
-    
     act.Execute(pset)
 
 def insert_text(hwp, text):
@@ -56,7 +53,7 @@ def insert_text(hwp, text):
 def process_and_insert_tags(hwp, text_block):
     lines = str(text_block).split('\n')
     for i, line in enumerate(lines):
-        parts = re.split(r'(<u>|</u>|<b>|</b>|<r>|</r>|<y>|</y>)', line)
+        parts = re.split(r'(<u>|</u>|<b>|</b>|<r>|</r>)', line)
         for part in parts:
             if part == '<u>': set_style(hwp, underline=True)
             elif part == '</u>': set_style(hwp, underline=False)
@@ -64,12 +61,8 @@ def process_and_insert_tags(hwp, text_block):
             elif part == '</b>': set_style(hwp, bold=False)
             elif part == '<r>': set_style(hwp, color=255)
             elif part == '</r>': set_style(hwp, color=0)
-            elif part == '<y>': set_style(hwp, shadecolor=13434879) 
-            elif part == '</y>': set_style(hwp, shadecolor=4294967295) 
             elif part: insert_text(hwp, part)
-        
-        if i < len(lines) - 1: 
-            hwp.HAction.Run("BreakPara")
+        if i < len(lines) - 1: hwp.HAction.Run("BreakPara")
 
 def insert_keep_style(hwp, field_name, text):
     text_str = str(text)
@@ -77,7 +70,7 @@ def insert_keep_style(hwp, field_name, text):
         hwp.PutFieldText(field_name, " ")
         return
 
-    if not re.search(r'(<u>|</u>|<b>|</b>|<r>|</r>|<y>|</y>)', text_str):
+    if not re.search(r'(<u>|</u>|<b>|</b>|<r>|</r>)', text_str):
         hwp.PutFieldText(field_name, text_str.replace('\n', '\r\n'))
         return
 
@@ -198,7 +191,7 @@ def main():
         for i, content in enumerate(all_data):
             hwp.Open(HWP_TEMPLATE_PATH)
             time.sleep(0.3) 
-            print(f"Processing... [{i+1}/{len(all_data)}]")
+            print(f"   📝 [{i+1}/{len(all_data)}] 지문 생성 중...")
             
             process_fields_and_rows(hwp, content)
             
@@ -207,7 +200,7 @@ def main():
             hwp.Clear(1) 
             time.sleep(0.2)
 
-        print("Merging files...")
+        print("📚 파일을 하나로 합치는 중...")
         time.sleep(1.0)
         
         temp_files = sorted([os.path.join(TEMP_DIR, f) for f in os.listdir(TEMP_DIR) if f.endswith(".hwp")])
@@ -233,10 +226,10 @@ def main():
                 hwp.Run("Cancel") 
 
             hwp.SaveAs(os.path.join(BASE_DIR, OUTPUT_FILENAME))
-            print(f"\nDone! Saved at:\n{os.path.join(BASE_DIR, OUTPUT_FILENAME)}")
+            print(f"\n🎉 모든 작업 완료! 저장 위치:\n👉 {os.path.join(BASE_DIR, OUTPUT_FILENAME)}")
             
     except Exception as e:
-        print(f"\nError: {e}")
+        print(f"\n❌ [실행 중 오류 발생]: {e}")
     finally:
         shutil.rmtree(TEMP_DIR, ignore_errors=True)
 
