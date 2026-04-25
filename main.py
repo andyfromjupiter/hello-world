@@ -36,14 +36,16 @@ def load_json_data(filepath):
         except: continue
     raise ValueError("JSON Parsing Failed")
 
-def set_style(hwp, bold=None, underline=None, color=None, backcolor=None):
+def set_style(hwp, bold=None, underline=None, color=None, shadecolor=None):
     act = hwp.CreateAction("CharShape")
     pset = act.CreateSet()
     act.GetDefault(pset)
+    
     if bold is not None: pset.SetItem("Bold", 1 if bold else 0)
     if underline is not None: pset.SetItem("UnderlineType", 1 if underline else 0)
     if color is not None: pset.SetItem("TextColor", color)
-    if backcolor is not None: pset.SetItem("BackColor", backcolor)
+    if shadecolor is not None: pset.SetItem("ShadeColor", shadecolor)
+    
     act.Execute(pset)
 
 def insert_text(hwp, text):
@@ -62,10 +64,12 @@ def process_and_insert_tags(hwp, text_block):
             elif part == '</b>': set_style(hwp, bold=False)
             elif part == '<r>': set_style(hwp, color=255)
             elif part == '</r>': set_style(hwp, color=0)
-            elif part == '<y>': set_style(hwp, backcolor=13434879) 
-            elif part == '</y>': set_style(hwp, backcolor=4294967295) 
+            elif part == '<y>': set_style(hwp, shadecolor=13434879) 
+            elif part == '</y>': set_style(hwp, shadecolor=4294967295) 
             elif part: insert_text(hwp, part)
-        if i < len(lines) - 1: hwp.HAction.Run("BreakPara")
+        
+        if i < len(lines) - 1: 
+            hwp.HAction.Run("BreakPara")
 
 def insert_keep_style(hwp, field_name, text):
     text_str = str(text)
