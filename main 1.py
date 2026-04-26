@@ -6,9 +6,9 @@ import re
 import win32com.client as win32
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-HWP_TEMPLATE_PATH = os.path.join(BASE_DIR, "템플릿_변형문제.hwp") 
+HWP_TEMPLATE_PATH = os.path.join(BASE_DIR, "name.hwp") 
 DATA_FILENAME = "JSON.txt"
-OUTPUT_FILENAME = "변형문제 샘플.hwp" 
+OUTPUT_FILENAME = "name.hwp" 
 TEMP_DIR = os.path.join(BASE_DIR, "temp_files")
 
 def init_hwp():
