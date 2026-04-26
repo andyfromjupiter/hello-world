@@ -6,9 +6,9 @@ import re
 import win32com.client as win32
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-HWP_TEMPLATE_PATH = os.path.join(BASE_DIR, "템플릿_빅북.hwp") 
+HWP_TEMPLATE_PATH = os.path.join(BASE_DIR, "템플릿_미니북.hwp") 
 DATA_FILENAME = "JSON.txt"
-OUTPUT_FILENAME = "빅북 샘플.hwp" 
+OUTPUT_FILENAME = "미니북 샘플.hwp" 
 TEMP_DIR = os.path.join(BASE_DIR, "temp_files")
 
 def init_hwp():
@@ -94,6 +94,10 @@ def insert_table_data(hwp, field_name, data_list):
     for target in targets:
         if hwp.MoveToField(target, True, False, True):
             hwp.PutFieldText(target, "")
+            
+            # 🚨 [마법의 한 줄] 텍스트를 지운 후 커서를 다시 표 칸(누름틀) 안으로 안전하게 찔러 넣음
+            hwp.MoveToField(target, True, False, True) 
+            
             for row_idx, row_data in enumerate(data_list):
                 for col_idx, cell_data in enumerate(row_data):
                     process_and_insert_tags(hwp, cell_data)
@@ -169,16 +173,30 @@ def process_fields_and_rows(hwp, content):
             passage_no = str(content.get(k)).strip()
             break
 
+    # ------------------ [수정된 사진 삽입 로직 시작] ------------------
     if passage_no:
-        image_path = os.path.join(BASE_DIR, f"{passage_no}.jpeg")
-        if os.path.exists(image_path):
+        possible_extensions = [".jpg", ".jpeg", ".png"]
+        image_path = None
+
+        for ext in possible_extensions:
+            temp_path = os.path.join(BASE_DIR, f"{passage_no}{ext}")
+            if os.path.exists(temp_path):
+                image_path = temp_path
+                break
+
+        if image_path:
             for base_pic in ["pic", "PIC"]:
                 targets = [base_pic] + [f"{base_pic}{{{i}}}" for i in range(1, 10)]
                 for target in targets:
                     if hwp.MoveToField(target, True, False, True):
-                        hwp.PutFieldText(target, ""); hwp.MoveToField(target, True, False, True)
-                        hwp.InsertPicture(image_path, True, 3, False, False, 0)
+                        hwp.PutFieldText(target, "")
+                        hwp.MoveToField(target, True, False, True)
+                        try:
+                            hwp.InsertPicture(image_path, True, 3, False, False, 0)
+                        except Exception as e:
+                            print(f"이미지 삽입 에러: {e}")
                         hwp.Run("Cancel")
+    # ------------------ [수정된 사진 삽입 로직 끝] ------------------
 
 def main():
     if not os.path.exists(DATA_FILENAME): return
