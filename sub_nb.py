@@ -6,9 +6,9 @@ import re
 import win32com.client as win32
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-HWP_TEMPLATE_PATH = os.path.join(BASE_DIR, "템플릿_구문분석 및 병맛.hwp") 
+HWP_TEMPLATE_PATH = os.path.join(BASE_DIR, "name.hwp") 
 DATA_FILENAME = "JSON.txt"
-OUTPUT_FILENAME = "구문 샘플.hwp" 
+OUTPUT_FILENAME = "name.hwp" 
 TEMP_DIR = os.path.join(BASE_DIR, "temp_files")
 
 def init_hwp():
@@ -241,7 +241,6 @@ def main():
                 pset.SetItem("FileName", f_path); pset.SetItem("KeepSection", 1); act.Execute(pset)
                 time.sleep(0.1)
             
-            # [ 내용 ] 볼드처리 정규식 제거됨
             patterns = [(r"\([a-zA-Z]\)[ ]*_+", True), (r"\[[ ]*T[ ]*/[ ]*F[ ]*\]", False)]
             for regex, is_bold in patterns:
                 hwp.HAction.Run("MoveDocBegin")
