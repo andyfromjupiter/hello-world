@@ -8,7 +8,7 @@ import win32com.client as win32
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HWP_TEMPLATE_PATH = os.path.join(BASE_DIR, "name.hwp") 
 DATA_FILENAME = "JSON.txt"
-OUTPUT_FILENAME = "name.hwp" 
+OUTPUT_FILENAME = "n.hwp" 
 TEMP_DIR = os.path.join(BASE_DIR, "temp_files")
 
 def init_hwp():
@@ -53,7 +53,7 @@ def insert_text(hwp, text):
 
 def process_and_insert_tags(hwp, text_block):
     clean_text = str(text_block).replace('\\n', '\n').replace('\r', '')
-    parts = re.split(r'(<u>|</u>|<b>|</b>|<r>|</r>|<y>|</y>)', clean_text)
+    parts = re.split(r'(<u>|</u>|<b>|</b>|<r>|</r>|<y>|</y>|<sb>|</sb>)', clean_text)
     
     for part in parts:
         if part == '<u>': set_style(hwp, underline=True)
@@ -64,6 +64,8 @@ def process_and_insert_tags(hwp, text_block):
         elif part == '</r>': set_style(hwp, color=0)
         elif part == '<y>': set_style(hwp, shadecolor=13434879)  
         elif part == '</y>': set_style(hwp, shadecolor=4294967295) 
+        elif part == '<sb>': set_style(hwp, color=10246656)
+        elif part == '</sb>': set_style(hwp, color=0)
         elif part: 
             insert_text(hwp, part.replace('\n', '\r\n'))
 
@@ -73,7 +75,7 @@ def insert_keep_style(hwp, field_name, text):
         hwp.PutFieldText(field_name, " ")
         return
 
-    if not re.search(r'(<u>|</u>|<b>|</b>|<r>|</r>|<y>|</y>)', text_str):
+    if not re.search(r'(<u>|</u>|<b>|</b>|<r>|</r>|<y>|</y>|<sb>|</sb>)', text_str):
         hwp.PutFieldText(field_name, text_str.replace('\n', '\r\n'))
         return
 
@@ -94,7 +96,6 @@ def insert_table_data(hwp, field_name, data_list):
     for target in targets:
         if hwp.MoveToField(target, True, False, True):
             hwp.PutFieldText(target, "")
-            
             hwp.MoveToField(target, True, False, True) 
             
             for row_idx, row_data in enumerate(data_list):
@@ -188,18 +189,13 @@ def process_fields_and_rows(hwp, content):
                 for target in targets:
                     if hwp.MoveToField(target, True, False, False):
                         hwp.PutFieldText(target, "")
-                        
                         hwp.MoveToField(target, True, False, False)
-                        
                         hwp.Run("MoveRight")
-                        
                         hwp.Run("DeleteBack")
-                        
                         try:
                             hwp.InsertPicture(image_path, True, 3, False, False, 0)
                         except Exception as e:
                             print(f"이미지 삽입 에러: {e}")
-                        
                         hwp.Run("Cancel")
 
 def main():
