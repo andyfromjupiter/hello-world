@@ -27,11 +27,9 @@ def load_json_data(filepath):
             with open(filepath, "r", encoding=enc) as f:
                 raw_text = f.read().strip()
                 if raw_text.startswith("```json"):
-                    raw_text = raw_text.replace("
-```json", "", 1)
+                    raw_text = raw_text.replace("```json", "", 1)
                 if raw_text.endswith("```"):
-                    raw_text = raw_text[::-1].replace("
-```", "", 1)[::-1]
+                    raw_text = raw_text[::-1].replace("```", "", 1)[::-1]
                 
                 raw_text = re.sub(r'//.*', '', raw_text)
                 return json.loads(raw_text)
