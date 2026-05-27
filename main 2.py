@@ -66,8 +66,8 @@ def process_and_insert_tags(hwp, text_block):
         elif part == '</r>': set_style(hwp, color=0)
         elif part == '<y>': set_style(hwp, shadecolor=13434879)  
         elif part == '</y>': set_style(hwp, shadecolor=4294967295) 
-        elif part == '<bl>': set_style(hwp, color=16711680)  # 파란색 글자 적용
-        elif part == '</bl>': set_style(hwp, color=0)        # 글자색 초기화(검정)
+        elif part == '<bl>': set_style(hwp, color=16711680)  
+        elif part == '</bl>': set_style(hwp, color=0)        
         elif part: 
             insert_text(hwp, part.replace('\n', '\r\n'))
 
