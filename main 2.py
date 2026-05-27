@@ -74,7 +74,7 @@ def insert_keep_style(hwp, field_name, text):
     if not text_str or text_str.strip().lower() == "null":
         hwp.PutFieldText(field_name, " ")
         return
-
+    
     if not re.search(r'(<u>|</u>|<b>|</b>|<r>|</r>|<y>|</y>|<bl>|</bl>)', text_str):
         hwp.PutFieldText(field_name, text_str.replace('\n', '\r\n'))
         return
@@ -167,6 +167,38 @@ def process_fields_and_rows(hwp, content):
                     for target in targets:
                         try: hwp.PutFieldText(target, " ")
                         except: pass
+
+    passage_no = ""
+    for k in ["n", "N", "No", "NO", "num", "Num", "NUM"]:
+        if content.get(k):
+            passage_no = str(content.get(k)).strip()
+            break
+
+    if passage_no:
+        possible_extensions = [".jpg", ".jpeg", ".png"]
+        image_path = None
+
+        for ext in possible_extensions:
+            temp_path = os.path.join(BASE_DIR, f"{passage_no}{ext}")
+            if os.path.exists(temp_path):
+                image_path = temp_path
+                break
+
+        if image_path:
+            for base_pic in ["pic", "PIC"]:
+                targets = [base_pic] + [f"{base_pic}{{{i}}}" for i in range(1, 10)]
+                for target in targets:
+                    if hwp.MoveToField(target, True, False, False):
+                        hwp.PutFieldText(target, "")
+                        
+                        hwp.MoveToField(target, True, False, False)
+                        
+                        try:
+                            hwp.InsertPicture(image_path, True, 3, False, False, 0)
+                        except Exception as e:
+                            print(f"이미지 삽입 에러: {e}")
+                        
+                        hwp.Run("Cancel")
 
 def main():
     if not os.path.exists(DATA_FILENAME): return
