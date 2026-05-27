@@ -6,9 +6,9 @@ import re
 import win32com.client as win32
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-HWP_TEMPLATE_PATH = os.path.join(BASE_DIR, "name.hwp") 
+HWP_TEMPLATE_PATH = os.path.join(BASE_DIR, "템플릿_미니북.hwp") 
 DATA_FILENAME = "JSON.txt"
-OUTPUT_FILENAME = "name.hwp" 
+OUTPUT_FILENAME = "H2 2506 미니북.hwp" 
 TEMP_DIR = os.path.join(BASE_DIR, "temp_files")
 
 def init_hwp():
@@ -27,9 +27,11 @@ def load_json_data(filepath):
             with open(filepath, "r", encoding=enc) as f:
                 raw_text = f.read().strip()
                 if raw_text.startswith("```json"):
-                    raw_text = raw_text.replace("```json", "", 1)
+                    raw_text = raw_text.replace("
+```json", "", 1)
                 if raw_text.endswith("```"):
-                    raw_text = raw_text[::-1].replace("```", "", 1)[::-1]
+                    raw_text = raw_text[::-1].replace("
+```", "", 1)[::-1]
                 
                 raw_text = re.sub(r'//.*', '', raw_text)
                 return json.loads(raw_text)
@@ -53,7 +55,6 @@ def insert_text(hwp, text):
 
 def process_and_insert_tags(hwp, text_block):
     clean_text = str(text_block).replace('\\n', '\n').replace('\r', '')
-    # 정규표현식에 <bl>, </bl> 파란색 태그 추가
     parts = re.split(r'(<u>|</u>|<b>|</b>|<r>|</r>|<y>|</y>|<bl>|</bl>)', clean_text)
     
     for part in parts:
@@ -76,7 +77,6 @@ def insert_keep_style(hwp, field_name, text):
         hwp.PutFieldText(field_name, " ")
         return
 
-    # 정규표현식에 <bl>, </bl> 파란색 태그 추가
     if not re.search(r'(<u>|</u>|<b>|</b>|<r>|</r>|<y>|</y>|<bl>|</bl>)', text_str):
         hwp.PutFieldText(field_name, text_str.replace('\n', '\r\n'))
         return
@@ -169,42 +169,6 @@ def process_fields_and_rows(hwp, content):
                     for target in targets:
                         try: hwp.PutFieldText(target, " ")
                         except: pass
-
-    passage_no = ""
-    for k in ["n", "N", "No", "NO", "num", "Num", "NUM"]:
-        if content.get(k):
-            passage_no = str(content.get(k)).strip()
-            break
-
-    if passage_no:
-        possible_extensions = [".jpg", ".jpeg", ".png"]
-        image_path = None
-
-        for ext in possible_extensions:
-            temp_path = os.path.join(BASE_DIR, f"{passage_no}{ext}")
-            if os.path.exists(temp_path):
-                image_path = temp_path
-                break
-
-        if image_path:
-            for base_pic in ["pic", "PIC"]:
-                targets = [base_pic] + [f"{base_pic}{{{i}}}" for i in range(1, 10)]
-                for target in targets:
-                    if hwp.MoveToField(target, True, False, False):
-                        hwp.PutFieldText(target, "")
-                        
-                        hwp.MoveToField(target, True, False, False)
-                        
-                        hwp.Run("MoveRight")
-                        
-                        hwp.Run("DeleteBack")
-                        
-                        try:
-                            hwp.InsertPicture(image_path, True, 3, False, False, 0)
-                        except Exception as e:
-                            print(f"이미지 삽입 에러: {e}")
-                        
-                        hwp.Run("Cancel")
 
 def main():
     if not os.path.exists(DATA_FILENAME): return
